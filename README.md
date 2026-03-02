@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
 [![CI](https://github.com/bartwaardenburg/isagentready-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/bartwaardenburg/isagentready-mcp/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/BartWaardenburg/dc467336d6825cc861b82bee7a38397c/raw/isagentready-mcp-coverage.json)](https://bartwaardenburg.github.io/isagentready-mcp/)
 [![MCP](https://img.shields.io/badge/MCP-compatible-purple.svg)](https://modelcontextprotocol.io)
 
 A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for the [IsAgentReady](https://isagentready.com) API. Scan any website for AI agent readiness and get detailed reports with scores, letter grades, and actionable recommendations across 5 categories: Discovery, Structured Data, Semantics, Agent Protocols, and Security.
