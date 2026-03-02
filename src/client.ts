@@ -4,13 +4,15 @@ import type { ScanResult, ScanPending, ScanEnqueued, RankingsResponse } from "./
 export class IsAgentReadyApiError extends Error {
   constructor(
     message: string,
-    public readonly status: number,
-    public readonly details?: unknown,
+    readonly status: number,
+    readonly details?: unknown,
   ) {
     super(message);
-    this.name = "IsAgentReadyApiError";
   }
 }
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 interface ClientOptions {
   maxRetries?: number;
@@ -39,55 +41,43 @@ export class IsAgentReadyClient {
       if (cached !== undefined) return cached;
     }
 
-    let lastError: Error | undefined;
-
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
-      try {
-        const url = `${this.baseUrl}${path}`;
-        const headers = new Headers({ "Content-Type": "application/json" });
+      const url = `${this.baseUrl}${path}`;
+      const headers = new Headers({ "Content-Type": "application/json" });
 
-        const init: RequestInit = { method, headers };
-        if (body) {
-          init.body = JSON.stringify(body);
-        }
-
-        const response = await fetch(url, init);
-
-        if (response.status === 429 && attempt < this.maxRetries) {
-          const retryAfter = response.headers.get("retry-after");
-          const delayMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : Math.pow(2, attempt) * 1000;
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-          continue;
-        }
-
-        if (!response.ok) {
-          const errorBody = await response.json().catch(() => null);
-          throw new IsAgentReadyApiError(
-            (errorBody as { error?: string } | null)?.error ?? `HTTP ${response.status}`,
-            response.status,
-            errorBody,
-          );
-        }
-
-        const data = (await response.json()) as T;
-
-        if (cacheKey) {
-          this.cache.set(cacheKey, data);
-        }
-
-        return data;
-      } catch (error) {
-        if (error instanceof IsAgentReadyApiError && error.status !== 429) {
-          throw error;
-        }
-        lastError = error instanceof Error ? error : new Error(String(error));
-        if (attempt < this.maxRetries && !(error instanceof IsAgentReadyApiError)) {
-          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-        }
+      const init: RequestInit = { method, headers };
+      if (body) {
+        init.body = JSON.stringify(body);
       }
+
+      const response = await fetch(url, init);
+
+      if (response.status === 429 && attempt < this.maxRetries) {
+        const retryAfter = response.headers.get("retry-after");
+        const delayMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : Math.pow(2, attempt) * 1000;
+        await sleep(delayMs);
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        throw new IsAgentReadyApiError(
+          (errorBody as { error?: string } | null)?.error ?? `HTTP ${response.status}`,
+          response.status,
+          errorBody,
+        );
+      }
+
+      const data = (await response.json()) as T;
+
+      if (cacheKey) {
+        this.cache.set(cacheKey, data);
+      }
+
+      return data;
     }
 
-    throw lastError ?? new Error("Request failed after retries");
+    throw new Error("Request failed after retries");
   }
 
   async getScanResults(domain: string): Promise<ScanResult | ScanPending> {

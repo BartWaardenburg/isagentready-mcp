@@ -8,7 +8,7 @@ export const toTextResult = (
   ...(structuredContent ? { structuredContent } : {}),
 });
 
-const getRecoverySuggestion = (status: number, message: string): string | null => {
+const getRecoverySuggestion = (status: number, message: string, details: unknown): string | null => {
   if (status === 429) {
     return "Rate limit exceeded. Wait a moment and retry. If scanning, note that recently scanned domains have a 1-hour cooldown.";
   }
@@ -18,7 +18,16 @@ const getRecoverySuggestion = (status: number, message: string): string | null =
   }
 
   if (status === 400) {
+    const detailStr = typeof details === "string" ? details : JSON.stringify(details ?? "");
+    const lower = detailStr.toLowerCase();
+    if (lower.includes("url")) {
+      return "Invalid or missing URL. Ensure the URL starts with http:// or https://.";
+    }
     return "Missing required parameter. Ensure the URL or domain is provided.";
+  }
+
+  if (status === 409) {
+    return "Conflict — a scan for this domain is already in progress. Wait for it to complete, then use get_scan_results to retrieve the results.";
   }
 
   if (status === 422) {
@@ -34,7 +43,7 @@ const getRecoverySuggestion = (status: number, message: string): string | null =
 
 export const toErrorResult = (error: unknown) => {
   if (error instanceof IsAgentReadyApiError) {
-    const suggestion = getRecoverySuggestion(error.status, error.message);
+    const suggestion = getRecoverySuggestion(error.status, error.message, error.details);
 
     return {
       content: [

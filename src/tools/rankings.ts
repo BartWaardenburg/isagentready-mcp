@@ -11,7 +11,7 @@ export const registerRankingTools = (server: McpServer, client: IsAgentReadyClie
       title: "Get AI Readiness Rankings",
       description:
         "Get a paginated, sorted list of website AI readiness scores. Supports filtering by grade range (high/mid/low), search by domain name, and sorting by score, domain, or newest.",
-      annotations: { readOnlyHint: true, openWorldHint: true },
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
       inputSchema: z.object({
         page: z.number().int().min(1).default(1).describe("Page number (default: 1)"),
         per_page: z

@@ -1,9 +1,11 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
 import type { IsAgentReadyClient } from "../client.js";
-import type { ScanResult } from "../types.js";
 import { formatScanResult } from "../format.js";
 import { toTextResult, toErrorResult } from "../tool-result.js";
+
+const isScanCompleted = (result: { status: string }): boolean =>
+  result.status === "completed" || result.status === "failed";
 
 export const registerScanTools = (server: McpServer, client: IsAgentReadyClient): void => {
   server.registerTool(
@@ -12,7 +14,7 @@ export const registerScanTools = (server: McpServer, client: IsAgentReadyClient)
       title: "Scan Website for AI Agent Readiness",
       description:
         "Trigger a new scan of a website for AI agent readiness. The scan runs asynchronously and typically takes 15-30 seconds. If a recent scan exists (within 1 hour), returns cached results. Use get_scan_results to poll for completed results.",
-      annotations: { readOnlyHint: false, openWorldHint: true },
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
       inputSchema: z.object({
         url: z
           .string()
@@ -24,11 +26,10 @@ export const registerScanTools = (server: McpServer, client: IsAgentReadyClient)
       try {
         const result = await client.createScan(url);
 
-        if (result.status === "completed") {
-          const scan = result as ScanResult;
+        if (isScanCompleted(result)) {
           return toTextResult(
-            `Recent scan found (cached):\n\n${formatScanResult(scan)}`,
-            { type: "cached_result", ...scan },
+            `Recent scan found (cached):\n\n${formatScanResult(result as Parameters<typeof formatScanResult>[0])}`,
+            { type: "cached_result", ...result },
           );
         }
 
@@ -57,7 +58,7 @@ export const registerScanTools = (server: McpServer, client: IsAgentReadyClient)
       title: "Get Scan Results",
       description:
         "Get the latest scan results for a domain, including overall score, letter grade, per-category breakdowns, and individual checkpoint results with actionable recommendations. Returns a pending status if the scan is still in progress.",
-      annotations: { readOnlyHint: true, openWorldHint: true },
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
       inputSchema: z.object({
         domain: z
           .string()
@@ -69,11 +70,12 @@ export const registerScanTools = (server: McpServer, client: IsAgentReadyClient)
       try {
         const result = await client.getScanResults(domain);
 
-        if (result.status === "pending" || result.status === "running") {
+        if (!isScanCompleted(result)) {
+          const message = "message" in result ? String(result.message) : "";
           return toTextResult(
             [
               `Scan for ${result.domain} is ${result.status}.`,
-              "message" in result ? (result as { message: string }).message : "",
+              message,
               "",
               "Poll again in a few seconds to check for completion.",
             ]
@@ -83,8 +85,10 @@ export const registerScanTools = (server: McpServer, client: IsAgentReadyClient)
           );
         }
 
-        const scan = result as ScanResult;
-        return toTextResult(formatScanResult(scan), { type: "completed", ...scan });
+        return toTextResult(
+          formatScanResult(result as Parameters<typeof formatScanResult>[0]),
+          { type: "completed", ...result },
+        );
       } catch (error) {
         return toErrorResult(error);
       }

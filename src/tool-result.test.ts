@@ -58,6 +58,20 @@ describe("toErrorResult", () => {
     expect(result.content[0].text).toContain("required parameter");
   });
 
+  it("includes context-sensitive 400 suggestion for URL errors", () => {
+    const error = new IsAgentReadyApiError("Bad request", 400, { error: "Invalid URL" });
+    const result = toErrorResult(error);
+
+    expect(result.content[0].text).toContain("http://");
+  });
+
+  it("includes recovery suggestion for 409", () => {
+    const error = new IsAgentReadyApiError("Conflict", 409);
+    const result = toErrorResult(error);
+
+    expect(result.content[0].text).toContain("already in progress");
+  });
+
   it("handles generic Error", () => {
     const result = toErrorResult(new Error("Network failed"));
 

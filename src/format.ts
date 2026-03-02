@@ -1,14 +1,5 @@
 import type { ScanResult, Category, Checkpoint } from "./types.js";
 
-const gradeEmoji: Record<string, string> = {
-  "A+": "A+",
-  A: "A",
-  B: "B",
-  C: "C",
-  D: "D",
-  F: "F",
-};
-
 const statusIcon: Record<string, string> = {
   pass: "[PASS]",
   partial: "[PARTIAL]",
@@ -37,14 +28,14 @@ export const formatCategory = (cat: Category): string => {
 export const formatScanResult = (scan: ScanResult): string => {
   const lines = [
     `Domain: ${scan.domain}`,
-    `Grade: ${gradeEmoji[scan.letter_grade] ?? scan.letter_grade} (${scan.overall_score}/100)`,
+    `Grade: ${scan.letter_grade} (${scan.overall_score}/100)`,
     `Status: ${scan.status}`,
     scan.scan_duration_ms ? `Scan duration: ${scan.scan_duration_ms}ms` : "",
     scan.completed_at ? `Completed: ${scan.completed_at}` : "",
     "",
     ...(scan.categories ?? []).map(formatCategory),
   ];
-  return lines.filter((l) => l !== undefined).join("\n");
+  return lines.filter(Boolean).join("\n");
 };
 
 export const formatScanSummary = (scan: ScanResult): string =>

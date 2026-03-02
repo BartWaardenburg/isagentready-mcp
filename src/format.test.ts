@@ -111,6 +111,11 @@ describe("formatScanResult", () => {
     const result = formatScanResult(scanResult({ categories: [] }));
     expect(result).toContain("Domain: example.com");
   });
+
+  it("filters empty lines when optional fields are missing", () => {
+    const result = formatScanResult(scanResult({ scan_duration_ms: 0, completed_at: "" }));
+    expect(result).not.toContain("\n\n\n");
+  });
 });
 
 describe("formatScanSummary", () => {

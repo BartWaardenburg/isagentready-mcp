@@ -42,6 +42,29 @@ describe("createServer", () => {
       expect(tool.annotations, `Tool "${name}" should have annotations`).toBeDefined();
     }
   });
+
+  it("all tools have destructiveHint annotation", () => {
+    const tools = getTools();
+
+    for (const [name, tool] of Object.entries(tools)) {
+      expect(
+        "destructiveHint" in (tool.annotations ?? {}),
+        `Tool "${name}" should have destructiveHint annotation`,
+      ).toBe(true);
+    }
+  });
+
+  it("read-only tools have readOnlyHint set to true", () => {
+    const tools = getTools();
+    const readOnlyTools = ["get_scan_results", "get_rankings"];
+
+    for (const name of readOnlyTools) {
+      expect(
+        (tools[name].annotations as Record<string, unknown>).readOnlyHint,
+        `Tool "${name}" should have readOnlyHint: true`,
+      ).toBe(true);
+    }
+  });
 });
 
 describe("parseToolsets", () => {

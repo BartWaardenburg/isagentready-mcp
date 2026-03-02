@@ -1,0 +1,20 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      cacheTtl:
+        type: number
+        description: Cache TTL in seconds (default 120)
+      maxRetries:
+        type: number
+        description: Max retry attempts (default 3)
+  commandFunction: |
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'isagentready-mcp'],
+      env: {
+        ...(config.cacheTtl ? { ISAGENTREADY_CACHE_TTL: String(config.cacheTtl) } : {}),
+        ...(config.maxRetries ? { ISAGENTREADY_MAX_RETRIES: String(config.maxRetries) } : {})
+      }
+    })

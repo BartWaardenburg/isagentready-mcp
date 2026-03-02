@@ -22,7 +22,7 @@ export interface Category {
 export interface ScanResult {
   id: string;
   domain: string;
-  status: "pending" | "running" | "completed" | "failed";
+  status: "completed" | "failed";
   overall_score: number;
   letter_grade: "F" | "D" | "C" | "B" | "A" | "A+";
   scan_duration_ms: number;
@@ -51,9 +51,4 @@ export interface RankingsResponse {
   page: number;
   per_page: number;
   total_pages: number;
-}
-
-export interface ApiError {
-  error: string;
-  message: string;
 }
