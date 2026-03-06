@@ -9,35 +9,9 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for the [IsAgentReady](https://isagentready.com) API. Scan any website for AI agent readiness and get detailed reports with scores, letter grades, and actionable recommendations across 5 categories: Discovery, Structured Data, Semantics, Agent Protocols, and Security.
 
-## Features
+## Add To Your Editor
 
-- **3 MCP tools** for scanning, retrieving results, and browsing rankings
-- **No API key required** — public API, zero configuration needed
-- **Built-in caching** with configurable TTL and automatic invalidation on scans
-- **Retry logic** with exponential backoff and `Retry-After` header support
-- **Structured content** returned alongside human-readable text
-- **Toolset filtering** to expose only the tool categories you need
-- **Actionable error messages** with context-aware recovery suggestions
-- **Docker support** for containerized deployment
-- **97 unit tests** across 7 test files
-
-## Supported Clients
-
-This MCP server works with any client that supports the Model Context Protocol, including:
-
-| Client | Easiest install |
-|---|---|
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | One-liner: `claude mcp add` |
-| [Codex CLI](https://github.com/openai/codex) (OpenAI) | One-liner: `codex mcp add` |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli) (Google) | One-liner: `gemini mcp add` |
-| [VS Code](https://code.visualstudio.com/) (Copilot) | Command Palette: `MCP: Add Server` |
-| [Claude Desktop](https://claude.ai/download) | JSON config file |
-| [Cursor](https://cursor.com) | JSON config file |
-| [Windsurf](https://codeium.com/windsurf) | JSON config file |
-| [Cline](https://github.com/cline/cline) | UI settings |
-| [Zed](https://zed.dev) | JSON settings file |
-
-## Installation
+CLI one-liners — the fastest way to get started. Pick your tool:
 
 ### Claude Code
 
@@ -75,16 +49,66 @@ Or add to `.vscode/mcp.json` in your project directory:
 }
 ```
 
-### Claude Desktop / Cursor / Windsurf / Cline
+### Cursor
 
-These clients share the same JSON format. Add the config below to the appropriate file:
+Add to `.cursor/mcp.json` in your project directory (or `~/.cursor/mcp.json` for global):
 
-| Client | Config file |
+```json
+{
+  "mcpServers": {
+    "isagentready-mcp": {
+      "command": "npx",
+      "args": ["-y", "isagentready-mcp"]
+    }
+  }
+}
+```
+
+## Supported Clients
+
+This MCP server works with any client that supports the Model Context Protocol, including:
+
+| Client | Easiest install |
 |---|---|
-| Claude Desktop (macOS) | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Claude Desktop (Windows) | `%APPDATA%\Claude\claude_desktop_config.json` |
-| Cursor (project) | `.cursor/mcp.json` |
-| Cursor (global) | `~/.cursor/mcp.json` |
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | One-liner: `claude mcp add` |
+| [Codex CLI](https://github.com/openai/codex) (OpenAI) | One-liner: `codex mcp add` |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) (Google) | One-liner: `gemini mcp add` |
+| [VS Code](https://code.visualstudio.com/) (Copilot) | Command Palette: `MCP: Add Server` |
+| [Claude Desktop](https://claude.ai/download) | JSON config file |
+| [Cursor](https://cursor.com) | JSON config file |
+| [Windsurf](https://codeium.com/windsurf) | JSON config file |
+| [Cline](https://github.com/cline/cline) | UI settings |
+| [Zed](https://zed.dev) | JSON settings file |
+
+<details>
+<summary><strong>Claude Desktop, Cowork & other GUI clients (expand)</strong></summary>
+
+### Claude Desktop / Cowork
+
+Cowork runs inside Claude Desktop and uses the same connected MCP servers and permissions. Configure once in Claude Desktop, then the server is available in Cowork.
+
+Add to your Claude Desktop config file:
+
+| Platform | Config file |
+|---|---|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+```json
+{
+  "mcpServers": {
+    "isagentready-mcp": {
+      "command": "npx",
+      "args": ["-y", "isagentready-mcp"]
+    }
+  }
+}
+```
+
+### Windsurf / Cline
+
+| Client | Config location |
+|---|---|
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 | Cline | Settings > MCP Servers > Edit |
 
@@ -120,6 +144,23 @@ Add to your Zed settings (`~/.zed/settings.json` on macOS, `~/.config/zed/settin
 docker run -i --rm ghcr.io/bartwaardenburg/isagentready-mcp
 ```
 
+### Generic MCP Server Config
+
+Use this in any MCP host that supports stdio servers:
+
+- **Command:** `npx`
+- **Args:** `["-y", "isagentready-mcp"]`
+- **Optional env vars:** `ISAGENTREADY_CACHE_TTL`, `ISAGENTREADY_MAX_RETRIES`, `ISAGENTREADY_TOOLSETS` (see [Configuration](#configuration))
+
+Host key mapping:
+
+| Host | Top-level key | Notes |
+|---|---|---|
+| VS Code | `servers` | Add `"type": "stdio"` on the server object |
+| Claude Desktop / Cursor / Windsurf / Cline | `mcpServers` | Same command/args block |
+| Zed | `context_servers` | Same command/args block |
+| Codex CLI (TOML) | `mcp_servers` | Uses TOML, shown below |
+
 ### Codex CLI (TOML config alternative)
 
 If you prefer editing `~/.codex/config.toml` directly:
@@ -137,6 +178,45 @@ For any MCP-compatible client, use this server configuration:
 - **Command:** `npx`
 - **Args:** `["-y", "isagentready-mcp"]`
 - **No environment variables required**
+
+### Claude Ecosystem Notes
+
+Claude currently has multiple MCP-related concepts that are easy to mix up:
+
+- **Local MCP servers (Claude Desktop):** defined in `claude_desktop_config.json` and started on your machine ([docs](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)).
+- **Cowork:** reuses the MCP servers connected in Claude Desktop ([docs](https://support.claude.com/en/articles/13345190-get-started-with-cowork)).
+- **Connectors:** remote MCP integrations managed in Claude ([docs](https://support.claude.com/en/articles/11176164-use-connectors-to-extend-claude-s-capabilities)).
+- **Cowork plugins:** Claude-specific workflow packaging (instructions + tools/data integrations) ([docs](https://support.claude.com/en/articles/13837440-use-plugins-in-cowork)). Useful in Claude, but not portable as a generic MCP server config for other agent clients.
+
+Verified against vendor docs on **2026-03-05**.
+
+### Terminology
+
+What is portable across hosts:
+
+- MCP server runtime settings (`command`, `args`, `env`)
+- Transport model (`stdio` command server)
+- Tool names and tool schemas exposed by this server
+
+What is host/vendor-specific (not portable as-is):
+
+- Host config key names (`servers`, `mcpServers`, `context_servers`, `mcp_servers`)
+- Host UX/workflows for adding servers (CLI commands, UI menus, settings paths)
+- Anthropic-specific concepts such as [Claude Desktop local MCP servers](https://docs.anthropic.com/en/docs/claude-desktop/mcp), [Claude Connectors via remote MCP](https://docs.anthropic.com/en/docs/agents-and-tools/remote-mcp-servers), and [Claude Code plugins](https://docs.anthropic.com/en/docs/claude-code/plugins) used in Cowork workflows
+
+</details>
+
+## Features
+
+- **3 MCP tools** for scanning, retrieving results, and browsing rankings
+- **No API key required** — public API, zero configuration needed
+- **Built-in caching** with configurable TTL and automatic invalidation on scans
+- **Retry logic** with exponential backoff and `Retry-After` header support
+- **Structured content** returned alongside human-readable text
+- **Toolset filtering** to expose only the tool categories you need
+- **Actionable error messages** with context-aware recovery suggestions
+- **Docker support** for containerized deployment
+- **97 unit tests** across 7 test files
 
 ## Configuration
 
@@ -196,6 +276,12 @@ ISAGENTREADY_TOOLSETS=scans
 
 When not set, all toolsets are enabled. Invalid names are ignored; if all names are invalid, all toolsets are enabled as a fallback.
 
+## Security Notes
+
+- **Trust model:** Any prompt or agent allowed to call this MCP server can trigger website scans and retrieve results via the IsAgentReady API.
+- **No credentials required:** This server uses a public API, so there are no secrets to protect. However, scan requests reveal which domains you are evaluating.
+- **Team config governance:** Keep shared MCP config in version control and require review for changes to command/args/env/toolset filtering.
+
 ## Example Usage
 
 Once connected, you can interact with the IsAgentReady API using natural language:
@@ -229,6 +315,13 @@ Discovery — 15/20 (75%, weight: 30%)
 
 > Fix the failing checkpoints
 ```
+
+## Community
+
+- Support: [SUPPORT.md](SUPPORT.md)
+- Security reporting: [SECURITY.md](SECURITY.md)
+- Contributing guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Bug reports and feature requests: [Issues](https://github.com/bartwaardenburg/isagentready-mcp/issues)
 
 ## Development
 
