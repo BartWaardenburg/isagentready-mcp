@@ -16,7 +16,37 @@
       "version": "0.2.0",
       "transport": {
         "type": "stdio"
-      }
+      },
+      "environmentVariables": [
+        {
+          "name": "ISAGENTREADY_CACHE_TTL",
+          "description": "Response cache lifetime in seconds. Set 0 to disable the cache. Default 120.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ISAGENTREADY_MAX_RETRIES",
+          "description": "Maximum retry attempts for rate-limited (429) requests, with exponential backoff. Default 3.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ISAGENTREADY_BASE_URL",
+          "description": "API base URL. Default https://isagentready.com.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ISAGENTREADY_TOOLSETS",
+          "description": "Comma-separated list of tool categories to enable. Default all toolsets.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
     }
   ]
 }
