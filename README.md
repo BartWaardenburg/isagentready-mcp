@@ -9,6 +9,8 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for the [IsAgentReady](https://isagentready.com) API. Scan any website for AI agent readiness and get detailed reports with scores, letter grades, and actionable recommendations across 5 categories: Discovery, Structured Data, Semantics, Agent Protocols, and Security.
 
+The server supports MCP specification 2026-07-28. Clients that use the 2025 handshake also work.
+
 ## Add To Your Editor
 
 CLI one-liners — the fastest way to get started. Pick your tool:
