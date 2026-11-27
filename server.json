@@ -1,16 +1,52 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.BartWaardenburg/isagentready-mcp",
+  "title": "IsAgentReady",
   "description": "Scan websites for AI agent readiness with scores, grades, and actionable recommendations via the IsAgentReady API",
-  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/BartWaardenburg/isagentready-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://isagentready.com",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "isagentready-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "transport": {
         "type": "stdio"
-      }
+      },
+      "environmentVariables": [
+        {
+          "name": "ISAGENTREADY_CACHE_TTL",
+          "description": "Response cache lifetime in seconds. Set 0 to disable the cache. Default 120.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ISAGENTREADY_MAX_RETRIES",
+          "description": "Maximum retry attempts for rate-limited (429) requests, with exponential backoff. Default 3.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ISAGENTREADY_BASE_URL",
+          "description": "API base URL. Default https://isagentready.com.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ISAGENTREADY_TOOLSETS",
+          "description": "Comma-separated list of tool categories to enable. Default all toolsets.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
     }
   ]
 }
